@@ -17,7 +17,7 @@ module.exports = {
         use: ["style-loader", "css-loader"]
       },
       {
-        test: /\.(png|jpe?g|gif)$/i,
+        test: /\.(png|jpe?g|gif|svg|png)$/i,
         use: [
           {
             loader: 'file-loader',
@@ -26,7 +26,7 @@ module.exports = {
       }
     ]
   },
-  resolve: { extensions: ["*", ".js", ".jsx", ".css"] },
+  resolve: { extensions: ["*", ".js", ".jsx", ".css", ".png"] },
   output: {
     path: path.resolve(__dirname, "dist/"),
     publicPath: "/dist/",
