@@ -10,3 +10,21 @@
   color: white;
   top: 100px;
 }
+
+.search-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 10px;
+  
+}
+
+.search-container_input-search {
+  width: 200px;
+}
+
+.site-card-border-less-wrapper {
+  padding: 30px;
+  background: #ececec;
+  display:inline-block;
+}
