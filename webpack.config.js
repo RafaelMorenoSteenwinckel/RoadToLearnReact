@@ -15,10 +15,28 @@ module.exports = {
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg|png)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name (file) {
+                /*if (env === 'development') {
+                  return '[path][name].[ext]'
+              }*/
+                return '[name].[ext]'
+              },
+              publicPath: '/assets/',
+              outputPath: '/public/assets/'
+            },
+          },
+        ],
       }
     ]
   },
-  resolve: { extensions: ["*", ".js", ".jsx", ".css"] },
+  resolve: { extensions: ["*", ".js", ".jsx", ".css", ".png"] },
   output: {
     path: path.resolve(__dirname, "dist/"),
     publicPath: "/dist/",

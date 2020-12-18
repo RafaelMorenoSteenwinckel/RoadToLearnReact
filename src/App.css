@@ -1,4 +1,30 @@
 .App {
+  text-align: center;
     margin: 1rem;
     font-family: Arial, Helvetica, sans-serif;
+    /*background-color:bisque;*/
+    background-color:grey;
   }
+
+.App-title {
+  color: white;
+  top: 100px;
+}
+
+.search-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 10px;
+  
+}
+
+.search-container_input-search {
+  width: 200px;
+}
+
+.site-card-border-less-wrapper {
+  padding: 30px;
+  background: #ececec;
+  display:inline-block;
+}
