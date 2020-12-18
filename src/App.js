@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import './App.css';
 import Search from "./Search";
 import Table from "./Table";
-import { DatePicker, Button, Layout, PageHeader } from 'antd';
+import  Fetch from './Fetch';
+import { Layout, PageHeader } from 'antd';
 import 'antd/dist/antd.css';
-const { Header , Footer, Content } = Layout;
 
+const { Header , Footer, Content } = Layout;
+const axios = require('axios').default;
 const DEFAULT_QUERY = 'ZELDA';
 const PATH_BASE = 'https://hn.algolia.com/api/v1'; 
 const PATH_SEARCH = '/search';
@@ -18,99 +20,143 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchTerm : DEFAULT_QUERY,
-      result: null
+      searchTerm : '',
+      result: null,
+      searchTermApi : DEFAULT_QUERY,
+
     };
 
+    //Input de recherche dans la liste
     this.onSearchChange = this.onSearchChange.bind(this);
     this.isSearched = this.isSearched.bind(this);
+
+    //pour la table
     this.onDismiss = this.onDismiss.bind(this);
-    this.setSearchTopStories = this.setSearchTopStories.bind(this);
+
+
+    //this.setSearchTopStories = this.setSearchTopStories.bind(this);
+    this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
+    this.searchOnSubmit = this.searchOnSubmit.bind(this);
+    this.searchOnApiOnChange = this.searchOnApiOnChange.bind(this);
+    
   }
 
-  componentDidMount() {
-
-    console.log ("componentDidMount");
-
-    const {searchTerm} = this.state.searchTerm;
-    fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
-    .then(response => response.json())
-    .then(result => this.setSearchTopStories(result))
-    .catch(error => error);
+  searchOnSubmit() {
+    console.log ("On submit la !!!");
+    const {searchTermApi} = this.state;
+    this.fetchSearchTopStories(searchTermApi);
   }
 
-  setSearchTopStories(result) {
-    this.setState(
-      {result}
-    );
-  }
 
   onDismiss(objectID) {
 
-    const newList = {hits:[]};
-    newList.hits = this.state.result.hits.filter(
+    const newList = this.state.result.hits.filter(
       item => item.objectID !== objectID
     );
 
-    this.setState({result: newList});
+    //this.setState({result: Object.assign({}, this.state.result, {hits:newList})});
+    //Spread operator in action:
+
+    this.setState({ result : {...this.state.result, hits:newList}});
+
   }
 
   onSearchChange(event) {
     this.setState({searchTerm: event.target.value});
   }
 
+  searchOnApiOnChange(event) {
+    this.setState({searchTermApi: event.target.value});
+  }
+
   isSearched = (item) => {
-    return item.title.toLowerCase().includes(this.state.searchTerm.toLowerCase())
-      || item.url.toLowerCase().includes(this.state.searchTerm.toLowerCase())
+
+    return item.title && item.title.toLowerCase().includes(this.state.searchTerm.toLowerCase())
+      || item.url && item.url.toLowerCase().includes(this.state.searchTerm.toLowerCase())
       || item.points > this.state.searchTerm.toLowerCase();
   }
 
   render() {
 
-    const title = "This is the way !";
+    const {searchTerm, result, valueToFetch} = this.state;
 
-    const {searchTerm} = this.state;
     return (
       <>
         {
           /*
             <ExplainBindingComponent />
+            <div style={{width: '100%', textAlign: 'center', marginBottom: '5rem', backgroundColor: 'black'}}>
+              <img height='150px' src={saturn} />
+            </div>
           */
         }
+        
         <Layout>
-        <PageHeader
-          className="site-page-header"
-          title="React"
-          subTitle="Exemples avec des classes ES6"
-        />
-          <Header>
+          <PageHeader
+            className="site-page-header"
+            title="React"
+            subTitle="Rechercher dans la liste des résultats"
+          />
+          
+          <Header style={{height: '100%'}}>
+            <Fetch
+                  valueToFetch={valueToFetch}
+                  onChange={this.searchOnApiOnChange}
+                  onSubmit={this.searchOnSubmit}
+              >
+            </Fetch>
+          </Header>
+
+          <Content style={{ padding: '0 50px' }}>
 
             <Search
               value={searchTerm}
               onChange={this.onSearchChange}
-            >
-              <DatePicker />
-              <Button type="primary">Primary Button</Button>
-            </Search>
-          </Header>
-
-          <Content style={{ padding: '0 50px' }}>
+            />
+            
             <div className="site-layout-content">
+              { result && 
               <Table
-                list={this.state.result}
+                list={result}
                 isSearched={this.isSearched}
                 onDismiss={this.onDismiss}
               />
+              }
             </div>
-
           </Content>
-
           <Footer style={{ textAlign: 'center' }}>Moreno Steenwinckel Rafael - Analyst/Scrum Master</Footer>
         </Layout>
-
-
       </>
       );
     }
+
+
+    fetchSearchTopStories(searchTermApi) {
+      axios.get(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTermApi}`)
+      .then(
+        (fetchedList) => {
+          
+          this.setState(
+            {result : fetchedList.data}
+          );
+          //this.setSearchTopStories(result.data);
+        })
+      .catch(error => error);
+    }
+
+    componentDidMount() {
+
+      const {searchTermApi} = this.state;
+      this.fetchSearchTopStories(searchTermApi);
+      
+      /*
+      fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
+      .then(response => response.json())
+      .then(result => this.setSearchTopStories(result))
+      .catch(error => error);
+      */
+    }
+  
+
 }
 export default App;

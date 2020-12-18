@@ -24,15 +24,13 @@ class Table extends Component {
 
     render() {
         
-        const {onDismiss, isSearched, list} = this.props;        
-
-       
+        const {onDismiss, isSearched, list} = this.props;               
           const columns = [
             {
               title: 'Title',
               dataIndex: 'title',
               key: 'title',
-              sorter: (a,b) => a.title.localeCompare(b.title),
+              sorter: (a,b) => a.title && a.title.localeCompare(b.title),
             },
             {
                 title: 'Author',
@@ -86,7 +84,7 @@ class Table extends Component {
           ];
         let allData = [];
 
-        if (list && list.hits && list.hits.length) {
+        if (list.hits && list.hits.length) {
      
             allData=list.hits.filter(isSearched).map(item => {
 
@@ -99,7 +97,6 @@ class Table extends Component {
                         url: item.url,
                         action: item
                     }
-                    
                 }
             )
         }
