@@ -8,7 +8,7 @@ class Table extends Component {
 
     constructor(props) {
         super(props);
-    
+        //componentDidUpdate
     }
 
 /*
@@ -24,7 +24,7 @@ class Table extends Component {
 
     render() {
         
-        const {onDismiss, isSearched, list} = this.props;               
+        const {onDismiss, isSearched, list, isLoading, isSearchedPoint} = this.props;               
           const columns = [
             {
               title: 'Title',
@@ -86,7 +86,7 @@ class Table extends Component {
 
         if (list.hits && list.hits.length) {
      
-            allData=list.hits.filter(isSearched).map(item => {
+            allData=list.hits.filter(isSearched).filter(isSearchedPoint).map(item => {
 
                     return {
                         key: item.objectID,
@@ -103,10 +103,11 @@ class Table extends Component {
         
         return (
         <div>
-            {allData && <AntTable dataSource={allData} columns={columns} />}
+            {allData && <AntTable bordered dataSource={allData} loading={isLoading} columns={columns} />}
         </div>
         )
     }
+
 /*
     componentDidCatch(error, info) {
         //Pour catch des erreurs qui se produisent dans le composant

@@ -3,15 +3,16 @@ import './App.css';
 import Search from "./Search";
 import Table from "./Table";
 import  Fetch from './Fetch';
-import { Layout, PageHeader } from 'antd';
+import { Layout, PageHeader, Alert } from 'antd';
 import 'antd/dist/antd.css';
 
 const { Header , Footer, Content } = Layout;
 const axios = require('axios').default;
-const DEFAULT_QUERY = 'ZELDA';
+const DEFAULT_QUERY = '';
 const PATH_BASE = 'https://hn.algolia.com/api/v1'; 
 const PATH_SEARCH = '/search';
 const PARAM_SEARCH = 'query=';
+const PARAM_PAGE = 'page=';
 
 const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
 
@@ -21,18 +22,21 @@ class App extends Component {
     super(props);
     this.state = {
       searchTerm : '',
+      searchTermPoints : null,
       result: null,
       searchTermApi : DEFAULT_QUERY,
-
+      isLoading: false,
+      error: null
     };
 
     //Input de recherche dans la liste
     this.onSearchChange = this.onSearchChange.bind(this);
+    this.onSearchChangePoints = this.onSearchChangePoints.bind(this);
     this.isSearched = this.isSearched.bind(this);
+    this.isSearchedPoint = this.isSearchedPoint.bind(this);
 
     //pour la table
     this.onDismiss = this.onDismiss.bind(this);
-
 
     //this.setSearchTopStories = this.setSearchTopStories.bind(this);
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
@@ -42,9 +46,9 @@ class App extends Component {
   }
 
   searchOnSubmit() {
-    console.log ("On submit la !!!");
     const {searchTermApi} = this.state;
     this.fetchSearchTopStories(searchTermApi);
+    
   }
 
 
@@ -65,21 +69,32 @@ class App extends Component {
     this.setState({searchTerm: event.target.value});
   }
 
+  onSearchChangePoints(event) {
+    if (event.target.value < 0 || event.target.value > 1000) {
+      this.setState({error: 'Recherche sur les points incorrect'});
+    } else {
+      this.setState({searchTermPoints: event.target.value});
+      this.setState({error: null});
+    }
+  }
+
   searchOnApiOnChange(event) {
     this.setState({searchTermApi: event.target.value});
   }
 
-  isSearched = (item) => {
+  isSearchedPoint = (item) => {
+    return item.points > this.state.searchTermPoints;
+  }
 
+  isSearched = (item) => {
     return item.title && item.title.toLowerCase().includes(this.state.searchTerm.toLowerCase())
-      || item.url && item.url.toLowerCase().includes(this.state.searchTerm.toLowerCase())
-      || item.points > this.state.searchTerm.toLowerCase();
+      || item.url && item.url.toLowerCase().includes(this.state.searchTerm.toLowerCase());
   }
 
   render() {
 
-    const {searchTerm, result, valueToFetch} = this.state;
-
+    const {searchTerm, searchTermPoints, result, valueToFetch, isLoading, error} = this.state;
+    console.log ('render');
     return (
       <>
         {
@@ -91,6 +106,7 @@ class App extends Component {
           */
         }
         
+
         <Layout>
           <PageHeader
             className="site-page-header"
@@ -112,40 +128,96 @@ class App extends Component {
             <Search
               value={searchTerm}
               onChange={this.onSearchChange}
+              placeholder="Recherche par titre ou url"
             />
             
+            <Search
+              value={searchTermPoints}
+              onChange={this.onSearchChangePoints}
+              placeholder="Recherche par points"
+            />
+
             <div className="site-layout-content">
-              { result && 
+
+              {error && 
+                <Alert
+                  message="Error"
+                  description={error}
+                  type="error"
+                  showIcon
+                  closable
+                />
+              }
+
+              { result && result.hits.length > 0  &&
               <Table
                 list={result}
                 isSearched={this.isSearched}
+                isSearchedPoint={this.isSearchedPoint}
                 onDismiss={this.onDismiss}
+                isLoading={isLoading}
               />
               }
             </div>
           </Content>
-          <Footer style={{ textAlign: 'center' }}>Moreno Steenwinckel Rafael - Analyst/Scrum Master</Footer>
+          <Footer style={{ textAlign: 'center' }}>
+
+
+            {
+              /*
+            Dans l’ensemble le processus de montage a 4 méthodes de cycle de vie. Elles sont invoquées dans l’ordre suivant :
+              <ul>
+                <li>constructor()</li>
+                <li>getDerivedStateFromProps()</li>
+                <li>render()</li>
+                <li>componentDidMount()</li>
+              </ul>
+
+
+            Cycle de vie de la mise à jour d’un composant qui se produit lorsque l’état ou les propriétés changent 
+            <ul>
+                <li>getDerivedStateFromProps()</li>
+                <li>shouldComponentUpdate()</li>
+                <li>render()</li>
+                <li>getSnapshotBeforeUpdate()</li>
+                <li>componentDidUpdate()</li>
+              </ul>
+            */
+            }
+            Moreno Steenwinckel Rafael - Analyst/Scrum Master
+            
+          </Footer>
         </Layout>
       </>
       );
     }
 
-
-    fetchSearchTopStories(searchTermApi) {
-      axios.get(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTermApi}`)
+    fetchSearchTopStories(searchTermApi, page=0) {
+      this.setState({isLoading: true});
+      this.setState({error: null});
+      
+      axios.get(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTermApi}&${PARAM_PAGE}${page}`)
       .then(
         (fetchedList) => {
-          
+
           this.setState(
-            {result : fetchedList.data}
+            {
+              result : fetchedList.data,
+              isLoading: false
+            }
           );
-          //this.setSearchTopStories(result.data);
+          if (!this.state.result.hits.length) {
+            this.setState({error: `Pas de résultats pour : ${this.state.searchTermApi}`});
+          }
         })
-      .catch(error => error);
+      .catch(error => this.setState({error: 'Error pour récupérer les données !'}));
+
+      console.log('RESULT');
+      console.log(this.state.result);
     }
 
     componentDidMount() {
-
+      console.log ('componentDidMount');
       const {searchTermApi} = this.state;
       this.fetchSearchTopStories(searchTermApi);
       
