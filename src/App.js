@@ -3,8 +3,13 @@ import './App.css';
 import Search from "./Search";
 import Table from "./Table";
 import  Fetch from './Fetch';
-import { Layout, PageHeader, Alert } from 'antd';
-import 'antd/dist/antd.css';
+import { Layout, Alert } from 'antd';
+// import 'antd/dist/antd.css';
+
+import 'antd/dist/antd.dark.css';
+import 'antd/dist/antd.compact.css';
+
+// require ('./import-export/import.js');
 
 const { Header , Footer, Content } = Layout;
 const axios = require('axios').default;
@@ -20,13 +25,15 @@ class App extends Component {
 
   constructor(props) {
     super(props);
+    let _isMounted = false;
     this.state = {
       searchTerm : '',
       searchTermPoints : null,
       result: null,
       searchTermApi : DEFAULT_QUERY,
       isLoading: false,
-      error: null
+      error: null,
+      page:0
     };
 
     //Input de recherche dans la liste
@@ -42,15 +49,60 @@ class App extends Component {
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
     this.searchOnSubmit = this.searchOnSubmit.bind(this);
     this.searchOnApiOnChange = this.searchOnApiOnChange.bind(this);
-    
+    this.fetchMore = this.fetchMore.bind(this);
+    this.fetchLess = this.fetchLess.bind(this);
   }
 
-  searchOnSubmit() {
+  async fetchMore() {
+
     const {searchTermApi} = this.state;
-    this.fetchSearchTopStories(searchTermApi);
-    
+      const inc = this.state.page + 1;
+      await this.setState({ page:inc }); 
+      this.fetchSearchTopStories(searchTermApi, this.state.page);
+
+/*
+    if (this._isMounted) {
+      const {searchTermApi} = this.state;
+      const inc = this.state.page + 1;
+      this.setState({ page:inc }, () => {
+        this.fetchSearchTopStories(searchTermApi, this.state.page);
+      }); 
+    }*/
   }
 
+   fetchLess() {
+    const {searchTermApi} = this.state;
+    const dec = this.state.page - 1;
+
+     this.setState({ page:dec });
+      console.log ("Here ! : " + this.state.page);
+      this.fetchSearchTopStories(searchTermApi, this.state.page);
+
+    /*if (this._isMounted) {
+      const {searchTermApi} = this.state;
+      const dec = this.state.page - 1;
+      if (this.state.page === 0) {
+        this.setState({error: "Problème dans la pagination voulue... Valeur négative..."});
+        return;
+      }
+      /*this.setState({ page:dec }, () => {
+        this.fetchSearchTopStories(searchTermApi, this.state.page);
+      });*/
+
+     /* await this.setState({ page:dec });
+      console.log ("Here ! : " + this.state.page);
+      this.fetchSearchTopStories(searchTermApi, this.state.page);
+    }*/
+  }
+
+  searchOnSubmit(event) {
+
+    event.preventDefault();
+    this.setState({page: 0}, () => {
+      const {searchTermApi, page} = this.state;
+      this.fetchSearchTopStories(searchTermApi, page);
+    });
+  }
 
   onDismiss(objectID) {
 
@@ -94,7 +146,6 @@ class App extends Component {
   render() {
 
     const {searchTerm, searchTermPoints, result, valueToFetch, isLoading, error} = this.state;
-    console.log ('render');
     return (
       <>
         {
@@ -106,25 +157,23 @@ class App extends Component {
           */
         }
         
-
         <Layout>
-          <PageHeader
-            className="site-page-header"
-            title="React"
-            subTitle="Rechercher dans la liste des résultats"
-          />
+
           
           <Header style={{height: '100%'}}>
             <Fetch
                   valueToFetch={valueToFetch}
                   onChange={this.searchOnApiOnChange}
                   onSubmit={this.searchOnSubmit}
+                  fetchMore={this.fetchMore}
+                  fetchLess={this.fetchLess}
               >
             </Fetch>
           </Header>
 
           <Content style={{ padding: '0 50px' }}>
 
+          <div className="site-layout-content">
             <Search
               value={searchTerm}
               onChange={this.onSearchChange}
@@ -136,7 +185,7 @@ class App extends Component {
               onChange={this.onSearchChangePoints}
               placeholder="Recherche par points"
             />
-
+            </div>
             <div className="site-layout-content">
 
               {error && 
@@ -146,6 +195,7 @@ class App extends Component {
                   type="error"
                   showIcon
                   closable
+                  style={{display: 'block'}}
                 />
               }
 
@@ -192,34 +242,37 @@ class App extends Component {
       );
     }
 
-    fetchSearchTopStories(searchTermApi, page=0) {
+    fetchSearchTopStories(searchTermApi, page) {
       this.setState({isLoading: true});
       this.setState({error: null});
-      
+
+      console.log ('fetchSearchTopStories' + this.state.page);
+
       axios.get(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTermApi}&${PARAM_PAGE}${page}`)
       .then(
         (fetchedList) => {
-
-          this.setState(
-            {
-              result : fetchedList.data,
-              isLoading: false
+          //Cela evite un warning dans le cas ou le user click ailleur (se casse ?) et qu'on tente de setter un state alors que le coposant est déjà demonté
+        
+          if (this._isMounted) {
+            this.setState(
+              {
+                result : fetchedList.data,
+                isLoading: false
+              }
+            );
+            if (!this.state.result.hits.length) {
+              this.setState({error: `Pas de résultats pour : ${this.state.searchTermApi}`});
             }
-          );
-          if (!this.state.result.hits.length) {
-            this.setState({error: `Pas de résultats pour : ${this.state.searchTermApi}`});
           }
         })
-      .catch(error => this.setState({error: 'Error pour récupérer les données !'}));
-
-      console.log('RESULT');
-      console.log(this.state.result);
+      .catch(error => this._isMounted && this.setState({error: 'Error pour récupérer les données !'}));
     }
 
     componentDidMount() {
-      console.log ('componentDidMount');
-      const {searchTermApi} = this.state;
-      this.fetchSearchTopStories(searchTermApi);
+      this._isMounted = true;
+      console.log ('componentDidMount' + this.state.page);
+      const {searchTermApi, page} = this.state;
+      this.fetchSearchTopStories(searchTermApi, page);
       
       /*
       fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
@@ -227,6 +280,10 @@ class App extends Component {
       .then(result => this.setSearchTopStories(result))
       .catch(error => error);
       */
+    }
+
+    componentWillUnmount() {
+      this._isMounted = false;
     }
   
 

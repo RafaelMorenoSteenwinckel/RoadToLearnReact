@@ -8,7 +8,8 @@ class Search extends Component {
         const {value, onChange, placeholder} = this.props;
         return (
             <>
-                <div className='search-container' style={{height:'2rem'}}>
+
+                <div className='search-container' style={{height:'4rem', float: 'right'}}>
                     <div className='search-container_input-search'> 
                         <Input
                             placeholder={placeholder}
