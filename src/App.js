@@ -1,5 +1,5 @@
 import React, { Component } from 'react'; 
-import './App.css';
+require 'App.css';
 import Search from "./Search";
 import Table from "./Table";
 import  Fetch from './Fetch';

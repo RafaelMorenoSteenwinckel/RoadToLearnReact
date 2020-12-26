@@ -1,6 +1,7 @@
 import React from 'react'; 
 import { Card, Button } from 'antd';
-import '../../App.css';
+
+require ('../../App.css');
 
 function TableStateLess({onDismiss, isSearched, list}) {
 
