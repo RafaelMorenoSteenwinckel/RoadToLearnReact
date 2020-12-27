@@ -4,6 +4,8 @@ import { SearchOutlined } from '@ant-design/icons';
 import MoreButton from './MoreButton';
 import LessButton from './LessButton';
 
+import PropTypes from 'prop-types';
+
 class Fetch extends Component{
 
     constructor(props) {

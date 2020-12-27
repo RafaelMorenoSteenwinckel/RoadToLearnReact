@@ -24,7 +24,8 @@ class Table extends Component {
 
     render() {
         
-        const {onDismiss, isSearched, list, isLoading, isSearchedPoint} = this.props;               
+        const {onDismiss, isSearched, list, isLoading, isSearchedPoint} = this.props;
+
           const columns = [
             {
               title: 'Title',
@@ -84,9 +85,8 @@ class Table extends Component {
           ];
         let allData = [];
 
-        if (list.hits && list.hits.length) {
-     
-            allData=list.hits.filter(isSearched).filter(isSearchedPoint).map(item => {
+        if (list && list.hits && list.hits.length) {
+                allData=list.hits.filter(isSearched).filter(isSearchedPoint).map(item => {
 
                     return {
                         key: item.objectID,

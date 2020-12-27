@@ -4,11 +4,10 @@ import Search from "./Search";
 import Table from "./Table";
 import  Fetch from './Fetch';
 import { Layout, Alert } from 'antd';
-// import 'antd/dist/antd.css';
-
 import 'antd/dist/antd.dark.css';
 import 'antd/dist/antd.compact.css';
 
+import PropTypes from 'prop-types';
 // require ('./import-export/import.js');
 
 const { Header , Footer, Content } = Layout;
@@ -20,6 +19,29 @@ const PARAM_SEARCH = 'query=';
 const PARAM_PAGE = 'page=';
 
 const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
+
+
+Fetch.PropTypes = {
+  valueToFetch: PropTypes.string,
+  onSubmit: PropTypes.func,
+  onChange: PropTypes.func,
+  fetchMore: PropTypes.func,
+  fetchLess: PropTypes.func,
+};
+
+Search.PropTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func,
+  placeholder: PropTypes.string
+};
+
+Table.PropTypes = {
+  onDismiss: PropTypes.func,
+  isSearched: PropTypes.func,
+  list: PropTypes.object,
+  isLoading: PropTypes.bool,
+  isSearchedPoint: PropTypes.func,
+};
 
 class App extends Component { 
 
@@ -75,7 +97,7 @@ class App extends Component {
     const dec = this.state.page - 1;
 
      this.setState({ page:dec });
-      console.log ("Here ! : " + this.state.page);
+      //console.log ("Here ! : " + this.state.page);
       this.fetchSearchTopStories(searchTermApi, this.state.page);
 
     /*if (this._isMounted) {
@@ -246,7 +268,7 @@ class App extends Component {
       this.setState({isLoading: true});
       this.setState({error: null});
 
-      console.log ('fetchSearchTopStories' + this.state.page);
+      //console.log ('fetchSearchTopStories' + this.state.page);
 
       axios.get(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTermApi}&${PARAM_PAGE}${page}`)
       .then(
@@ -270,7 +292,7 @@ class App extends Component {
 
     componentDidMount() {
       this._isMounted = true;
-      console.log ('componentDidMount' + this.state.page);
+      //console.log ('componentDidMount' + this.state.page);
       const {searchTermApi, page} = this.state;
       this.fetchSearchTopStories(searchTermApi, page);
       

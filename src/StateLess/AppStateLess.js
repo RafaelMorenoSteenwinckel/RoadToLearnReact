@@ -1,5 +1,5 @@
 import React, { Component } from 'react'; 
-import './../App.css';
+require ('./../App.css');
 import SearchStateLess from "./statelessComponents/SearchStateLess";
 import TableStateLess from "./statelessComponents/TableStateLess";
 import { DatePicker, Button, Layout, PageHeader } from 'antd';
