@@ -23,22 +23,22 @@ const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${DEFAULT_QUERY}`;
 
 Fetch.PropTypes = {
   valueToFetch: PropTypes.string,
-  onSubmit: PropTypes.func,
-  onChange: PropTypes.func,
-  fetchMore: PropTypes.func,
-  fetchLess: PropTypes.func,
+  onSubmit: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
+  fetchMore: PropTypes.func.isRequired,
+  fetchLess: PropTypes.func.isRequired,
 };
 
 Search.PropTypes = {
   value: PropTypes.string,
-  onChange: PropTypes.func,
+  onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string
 };
 
 Table.PropTypes = {
-  onDismiss: PropTypes.func,
-  isSearched: PropTypes.func,
-  list: PropTypes.object,
+  onDismiss: PropTypes.func.isRequired,
+  isSearched: PropTypes.func.isRequired,
+  list: PropTypes.object.isRequired,
   isLoading: PropTypes.bool,
   isSearchedPoint: PropTypes.func,
 };
